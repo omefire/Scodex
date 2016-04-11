@@ -1,0 +1,28 @@
+@(section: Option[controllers.model.NavBarSection])(loginForm: Form[LoginData])(implicit messages: Messages)
+
+@import views.html.helper._
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand">
+        <i class="fa fa-institution"></i>
+        scodex
+      </a>
+    </div>
+
+    <ul class="nav navbar-nav pull-right">
+
+      @helper.form(action = routes.UserController.authenticate) {
+        <div class="form-group">
+          @inputText(loginForm("username"), args = 'type -> "text", 'placeholder -> "username", 'class -> "form-control")
+        </div>
+        <div class="form-group">
+          @inputText(loginForm("password"), args = 'type -> "password", 'placeholder -> "password", 'class -> "form-control")
+        </div>
+        <input type="submit" value="login" />
+      }
+            
+    </ul>
+  </div>
+</nav>

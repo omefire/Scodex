@@ -1,0 +1,30 @@
+@(loginForm: Form[LoginData])(implicit messages: Messages)
+
+@import views.html.helper._
+
+@main("login") {
+
+  <div class="container">
+    <div class="jumbotron">
+
+      @if(loginForm.hasGlobalErrors) {
+        @for(error <- loginForm.globalErrors) {
+          <div class="alert alert-danger">@error.message</div>
+        }
+      }
+      
+      @helper.form(action = routes.UserController.authenticate) {
+        <form>
+          <div class="form-group">
+            @inputText(loginForm("username"), args = 'type -> "text", 'class -> "form-control")
+          </div>
+          <div class="form-group">
+            @inputPassword(loginForm("password"), args = 'class -> "form-control")
+          </div>
+          <input type="submit" value="login" />
+        </form>
+      }
+    </div>
+  </div>
+}
+

@@ -1,0 +1,16 @@
+@(users: Set[controllers.model.User])
+
+@main("user list") {
+  <div class="container">
+    <div class="jumbotron">
+      <h3>users</H3>
+
+      <ul class="list-group">
+          @for(user <- users) {
+              <li class="list-group-item">@user.username</li>
+          }
+      </ul>
+    </div>
+  </div>
+}
+

@@ -23,6 +23,10 @@ class UserStore() {
       Success(user)
     }
   }
+
+  def getAll: Set[User] = {
+    users.values.toSet
+  }
 }
 
 object UserStore {
@@ -30,4 +34,6 @@ object UserStore {
 
   def get(username: String) = store.get(username)
   def put(user: User) = store.put(user)
+  def getAll: Set[User] = store.getAll
 }
+

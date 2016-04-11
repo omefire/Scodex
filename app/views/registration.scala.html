@@ -1,0 +1,37 @@
+@(registrationForm: Form[UserRegistrationData])(implicit messages: Messages)
+
+@import views.html.helper._
+
+@main("register") {
+
+  <div class="container">
+    <div class="jumbotron">
+
+      @if(registrationForm.hasGlobalErrors) {
+        @for(error <- registrationForm.globalErrors) {
+          <div class="alert alert-danger">@error.message</div>
+        }
+      }
+      
+      @helper.form(action = routes.UserController.register) {
+        <form>
+          <div class="form-group">
+            @inputText(registrationForm("username"), args = 'type -> "text", 'class -> "form-control")
+          </div>
+          <div class="form-group">
+            @inputPassword(registrationForm("password"), args = 'class -> "form-control")
+          </div>
+          
+          <div class="form-group">
+            @inputText(registrationForm("email"), args = 'type -> "text", 'class -> "form-control")
+          </div>
+          <div class="form-group">
+            @inputText(registrationForm("telephoneNumber"), args = 'type -> "text", 'class -> "form-control")
+          </div>
+          <input type="submit" value="register" />
+        </form>
+      }
+    </div>
+  </div>
+}
+
