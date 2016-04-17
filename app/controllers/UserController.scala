@@ -126,7 +126,7 @@ class UserController @Inject()(val messagesApi: MessagesApi, val users: Users) e
 
   private def authenticateUser(username: String, password: String): Boolean = {
     Await.result(users.get(username).map { maybeUser =>
-      maybeUser.map(user => user.passwordHash.compare(password)) == Some(true)
+                   maybeUser.map(user => user.passwordHash.compare(password)) == Some(true)
     }, 2000 millis)
   }
 }

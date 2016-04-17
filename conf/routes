@@ -21,3 +21,4 @@ POST    /user/create                controllers.UserController.create
 POST    /user/register              controllers.UserController.register
 GET     /user/registration          controllers.UserController.registration
 POST    /user/authenticate          controllers.UserController.authenticate
+GET     /user/logout                controllers.UserController.logout

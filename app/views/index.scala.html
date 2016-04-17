@@ -1,6 +1,6 @@
 @(user: Option[controllers.model.User] = None)
 
-@main("welcome") {
+@main("welcome", user = user) {
   <div class="container">
     <div class="jumbotron">
       Welcome to Scodex

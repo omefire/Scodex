@@ -1,0 +1,8 @@
+@(section: Option[controllers.model.NavBarSection] = None)
+
+@import views.html.helper._
+
+<ul class="nav navbar-nav pull-right">
+  <li><a href="@routes.UserController.registration()">register</a></li>
+  <li><a href="@routes.UserController.login()">login</a></li>
+</ul>
