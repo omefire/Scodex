@@ -9,8 +9,8 @@ class User(val username: String,
 object User {
   def apply(username: String,
             passwordHash: String,
-            email: Option[String],
-            phoneNumber: Option[String]): User = {
+            email: Option[String] = None,
+            phoneNumber: Option[String] = None): User = {
     new User(username, PasswordHash(passwordHash), email.map(Email(_)), phoneNumber.map(PhoneNumber(_)))
   }
 
@@ -21,9 +21,10 @@ object User {
     new User(username, passwordHash, email, phoneNumber)
   }
 
-  def stringTupled = ((username: String, passwordHash: String, email: Option[String], phoneNumber: Option[String])) => {
-    new User(username, PasswordHash(passwordHash), email.map(Email(_)), phoneNumber.map(PhoneNumber(_)))
+  def fromTuple(record: (String, String, Option[String], Option[String])): User = {
+    new User(record._1, PasswordHash(record._2), record._3.map(Email(_)), record._4.map(PhoneNumber(_)))
   }
 
-  def extractStringTuple(user: User) = (user.username, user.passwordHash.pwHash, user.email.map(_.email), user.phoneNumber.map(_.number))
+  def toTuple(user: User): Option[(String, String, Option[String], Option[String])] =
+    Some((user.username, user.passwordHash.pwHash, user.email.map(_.email), user.phoneNumber.map(_.number)))
 }

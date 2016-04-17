@@ -11,26 +11,25 @@ import play.api.i18n.{ I18nSupport, MessagesApi }
 
 import play.api.data.validation._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ Future, Await }
+import scala.concurrent.duration._
+
 // import play.api.Play.current
 // import play.api.i18n.Messages.Implicits._
 
 import scala.util.{ Try, Success, Failure }
 
 import controllers.model._
+import controllers.datastore.Users
 
 @Singleton
-class UserController @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class UserController @Inject()(val messagesApi: MessagesApi, val users: Users) extends Controller with I18nSupport {
 
-  def user[T](request: Request[T]): Option[User] = {
-    request.session.get(Security.username) match {
-      case None => {
-        None
-      }
-      case Some(username) => {
-        UserStore.get(username)
-      }
-    }
-  }
+  def user[T](request: Request[T]): Option[User] = for {
+      username <- request.session.get(Security.username)
+      user <- Await.result(users.get(username), 2000 millis)
+  } yield user
 
   def create = Action { request =>
     val tUser = request.body.asJson.flatMap { json =>
@@ -73,7 +72,7 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller 
   }
 
   def list = Action { request =>
-    Ok(views.html.list(UserStore.getAll))
+    Await.result(users.all.map { users => Ok(views.html.list(users.toSet)) }, 2000 millis)
   }
 
   def register = Action { implicit request =>
@@ -111,25 +110,24 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller 
                                          (UserRegistrationData.unapply) verifying(
                                            "User already exists!",
                                            fields => fields match {
-                                             case userData => UserStore.get(userData.username).isEmpty
+                                             case userData => Await.result(users.get(userData.username).map(_.isEmpty), 2000 millis)
                                            }))
 
-  def createUser(username: String,
-                 pw: PasswordHash,
-                 email: Option[Email] = None,
-                 telephoneNumber: Option[PhoneNumber] = None): Try[User] = {
+  private def createUser(username: String,
+                         pw: PasswordHash,
+                         email: Option[Email] = None,
+                         telephoneNumber: Option[PhoneNumber] = None): Try[User] = {
     val user = User(username, pw, email, telephoneNumber)
-    UserStore.put(user)
+    users += user
   }
 
-  def createUser(userData: UserRegistrationData): Try[User] =
+  private def createUser(userData: UserRegistrationData): Try[User] =
     createUser(userData.username, Password(userData.password), userData.email.map(Email(_)), userData.phoneNumber.map(PhoneNumber(_)))
 
-  def authenticateUser(username: String, password: String): Boolean = {
-    UserStore.get(username) match {
-      case Some(user) => user.passwordHash.compare(password)
-      case None => false
-    }
+  private def authenticateUser(username: String, password: String): Boolean = {
+    Await.result(users.get(username).map { maybeUser =>
+      maybeUser.map(user => user.passwordHash.compare(password)) == Some(true)
+    }, 2000 millis)
   }
 }
 
@@ -138,3 +136,4 @@ case class UserRegistrationData (username: String,
                                  password: String,
                                  email: Option[String],
                                  phoneNumber: Option[String]) {}
+
