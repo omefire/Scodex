@@ -2,23 +2,27 @@ package controllers.action
 
 import play.api.mvc._
 import controllers.model._
-import scala.concurrent.Future
+import scala.concurrent.{ Future, Await }
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.duration._
 import play.api.mvc.Results._
 
-class UserRequest[T](val user: Option[User], request: Request[T]) extends WrappedRequest[T](request)
+import javax.inject._
 
-object UserAction extends ActionBuilder[UserRequest] with ActionTransformer[Request, UserRequest] {
-  def transform[T](request: Request[T]): Future[UserRequest[T]] = Future.successful {
-    new UserRequest(request.session.get(Security.username).flatMap(UserStore.get(_)), request)
-  }
-}
+class AuthenticatedRequest[T](val user: Option[User], request: Request[T]) extends WrappedRequest[T](request)
 
-object AuthenticatedAction extends ActionFilter[UserRequest] {
-  def filter[T](request: UserRequest[T]): Future[Option[Result]] = Future.successful {
-    if (request.user.isEmpty) {
-      Some(Forbidden)
-    } else {
-      None
+trait AuthenticatedActions {
+  val users: controllers.datastore.Users
+
+  def AuthenticatedAction = new ActionBuilder[AuthenticatedRequest] {
+    override def invokeBlock[T](request: Request[T], block: AuthenticatedRequest[T] => Future[Result]): Future[Result] = {
+      request.session.get(Security.username).flatMap { username =>
+        Await.result(users.get(username), 2000 millis)
+      } match {
+        case None => Future { Forbidden }
+        case Some(user) => block(new AuthenticatedRequest(Some(user), request))
+      }
     }
   }
 }
+

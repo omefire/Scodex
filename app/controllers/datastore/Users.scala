@@ -15,7 +15,7 @@ class Users @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
 
   import driver.api._
   
-  private class UserTable (tag: Tag) extends Table[User](tag, "USERS") {
+  private class UserTable (tag: Tag) extends Table[User](tag, "USER") {
     def username = column[String]("USERNAME", O.PrimaryKey)
     def passwordHash = column[String]("PASSWORD")
     def email = column[Option[String]]("EMAIL")
@@ -23,15 +23,8 @@ class Users @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
     def * = (username, passwordHash, email, phoneNumber).shaped <> [User](User.fromTuple, User.toTuple _)
   }
 
-  // private object Users extends Table[User]("USER") {
-  //   def username = column[String]("USERNAME", O.PrimaryKey)
-  //   def passwordHash = column[String]("PASSWORD")
-  //   def email = column[Option[String]]("EMAIL")
-  //   def phoneNumber = column[Option[String]]("PHONE_NUMBER")
-  //   def * = (username, passwordHash, email, phoneNumber).shaped <> [User](User.fromTuple, User.toTuple _)
-  // }
-
   private val users = TableQuery[UserTable]
+  def schema = users.schema
 
   def all: Future[Seq[User]] = db.run(users.result)
 

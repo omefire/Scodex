@@ -1,6 +1,6 @@
-@(users: Set[controllers.model.User])
+@(user: Option[controllers.model.User], users: Set[controllers.model.User])
 
-@main("user list") {
+@main("user list", user) {
   <div class="container">
     <div class="jumbotron">
       <h4>users</h4>

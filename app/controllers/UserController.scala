@@ -20,11 +20,14 @@ import scala.concurrent.duration._
 
 import scala.util.{ Try, Success, Failure }
 
+import controllers.action._
 import controllers.model._
+import controllers.model.exception._
 import controllers.datastore.Users
 
 @Singleton
-class UserController @Inject()(val messagesApi: MessagesApi, val users: Users) extends Controller with I18nSupport {
+class UserController @Inject()(val messagesApi: MessagesApi, val users: Users) extends Controller
+    with I18nSupport with AuthenticatedActions {
 
   def user[T](request: Request[T]): Option[User] = for {
       username <- request.session.get(Security.username)
@@ -71,8 +74,8 @@ class UserController @Inject()(val messagesApi: MessagesApi, val users: Users) e
     Ok(views.html.registration(userRegistrationForm))
   }
 
-  def list = Action { request =>
-    Await.result(users.all.map { users => Ok(views.html.list(users.toSet)) }, 2000 millis)
+  def list = AuthenticatedAction { request =>
+    Await.result(users.all.map { users => Ok(views.html.user_list(request.user, users.toSet)) }, 2000 millis)
   }
 
   def register = Action { implicit request =>
